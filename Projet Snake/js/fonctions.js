@@ -19,14 +19,14 @@ var drawModule = (function () {
         */
         
         context.fillStyle = 'green';
-        context.fillRect(x*tailleSnake, y*tailleSnake, tailleSnake, tailleSnake);
+        context.fillRect(x*initialSizeSnake, y*initialSizeSnake, initialSizeSnake, initialSizeSnake);
         
         /*
             Ici la fonction est exactement la même qu'au dessus, avec une différence, c'est que cette fois on s'occupe des bordures du dessin.
         */
         
         context.strokeStyle = 'green';
-        context.strokeRect(x*tailleSnake, y*tailleSnake, tailleSnake, tailleSnake);
+        context.strokeRect(x*initialSizeSnake, y*initialSizeSnake, initialSizeSnake, initialSizeSnake);
         
         
     }
@@ -38,11 +38,11 @@ var drawModule = (function () {
         */
         
         context.fillStyle ='yellow';
-        context.fillRect(x*tailleSnake, y*tailleSnake, tailleSnake, tailleSnake);
+        context.fillRect(x*initialSizeSnake, y*initialSizeSnake, initialSizeSnake, initialSizeSnake);
         
         
         context.fillStyle ='red';
-        context.fillRect(x*tailleSnake+1, y*tailleSnake+1, tailleSnake-2, tailleSnake-2);
+        context.fillRect(x*initialSizeSnake+1, y*initialSizeSnake+1, initialSizeSnake-2, initialSizeSnake-2);
     
     }
     
@@ -93,21 +93,27 @@ var drawModule = (function () {
         /*
             Au tour de la bonne pizza d'être à crée dans le jeu.
         */
+    
+        var random = function () {
+            /* La fonction Math.random sert à générer des nombres aléatoires, très utile pour placer la pizza sur le plateau de jeu :D
+                    
+                    Mais après quelques tests, on constate que n'importe quel chiffre sortant de math.random, sera approché de 30 (à l'exception de 0.99999999999999 dont le résultat sera 31)
+                    Puis on ajoute le +1 pour obtenir à minima un chiffre entier.
+                    puis le Mathfloor, se contente lui de découper la partie entière du nombre. 
+                    Cela donne donc des coordonnées valides tout en étant parfaitement aléatoires !
+            */
+            var coeffrand = 30;
+            var positiverand = 1;
+            return Math.floor((Math.random()*coeffrand)+positiverand);
+        }
         
         var createPizza= function () {
             
             // On crée les données pour rendre aléatoire le spawn de la fameuse pizza :D, et pour cela on passe par un objet pour conserver ses propriétés.
             
                 pizzaCoords = {
-                    /* La fonction Math.random sert à générer des nombres aléatoires, très utile pour placer la pizza sur le plateau de jeu :D
-                    
-                    Mais après quelques tests, on constate que n'importe quel chiffre sortant de math.random, sera approché de 30 (à l'exception de 0.99999999999999 dont le résultat sera 31)
-                    Puis on ajoute le +1 pour obtenir à minima un chiffre entier.
-                    puis le Mathfloor, se contente lui de découper la partie entière du nombre. 
-                    Cela donne donc des coordonnées valides tout en étant parfaitement aléatoires !
-                    */
-                    x: Math.floor((Math.random()* 30)+1),
-                    y: Math.floor((Math.random()* 30)+1)
+                    x: random(),
+                    y: random()
                 }
             /*
                 Techniquement on pourrait s'arrêter ici, cependant un problème subsiste... Que faire si la pizza apparaît au même endroit que notre serpent ? 
@@ -128,8 +134,8 @@ var drawModule = (function () {
                         */
                         if (pizzaCoords.x===snakeX || pizzaCoords.y === snakeY || pizzaCoords.y === snakeY && pizzaCoords.x===snakeX)
                             {
-                                pizzaCoords.x = Math.floor((Math.random() * 30) + 1);
-                                pizzaCoords.y = Math.floor((Math.random() * 30) + 1);
+                                pizzaCoords.x = random();
+                                pizzaCoords.y = random();
                             }
         }
         
@@ -164,7 +170,6 @@ var drawModule = (function () {
             
             
         */
-        
         
         var main = function() {
             // Mettons en place le fond dans lequel notre petit serpent va évoluer :) Prenons un joli bleu ciel tiens :o.
@@ -204,7 +209,7 @@ var drawModule = (function () {
                 OU SI il entre en contact avec lui même.
             */
             
-            if (snakeX == -1 || snakeX == width / tailleSnake || snakeY == -1 || snakeY == height / tailleSnake || checkCollision(snakeX, snakeY, snake)){
+            if (snakeX == -1 || snakeX == width / initialSizeSnake || snakeY == -1 || snakeY == height / initialSizeSnake || checkCollision(snakeX, snakeY, snake)){
                 // donc si l'une de ces conditions est valide, alors on stoppe le jeu : 
                 
                 // en remettant en fonction le bouton de démarrage
@@ -217,7 +222,8 @@ var drawModule = (function () {
                 // en fait pour que les animations fonctionnnent (ce qui n'est rien de plus qu'une suite d'images rendues très rapidement) on doit "tout" rendre à nouveau à chaque frame.
                 // ce qui va être intéressant avec la fonction que l'on verra après :  la fonction setInterval.
                 
-                
+                // On en profite aussi pour réinitialiser le score, tant qu'à faire ^^
+                score = 0;
                 gameloop = clearInterval(gameloop);
                 return;
             }
@@ -229,6 +235,27 @@ var drawModule = (function () {
             //Si le serpent se superpose aux coordonnées de la pizza, alors la queue du serpent s'allonge, le score incrémente, 
             //et on recrée une nouvelle pizza pour notre serpent toujours affamé ^^.
             
+            /*
+                ici nous avons une fonction permettant de booster la vitesse du jeu en fonction des performances du joueur.
+                Voyons ci dessous comment cela fonctionne
+            */
+            var speedBoost = function() {
+                
+                /* 
+                    On récupère la variable de score (qui nous permet de mesurer la performance de notre joueur) et on lui applique un modulo.
+                    L'intérêt du modulo ici est de pouvoir incrémenter la vitesse du jeu tous les X pizzas attrapés. Dans notre cas la valeur sera 10, mais est modifiable par la variable "difficulte".
+                    
+                */
+                var levelup  = score % difficulty;
+                
+                // si le résultat du modulo est nul, alors on augmente la vitesse du jeu. Pour augmenter la vitesse du jeu, on retire puis on met à jour la nouvelle intervalle de temps pour la boucle de jeu.
+                if(levelup == 0){
+                    gameSpeed = gameSpeed - difficulty;
+                    gameloop = clearInterval(gameloop);
+                    gameloop = setInterval(main, gameSpeed);
+                    
+                }
+            }
             
             if(snakeX == pizzaCoords.x && snakeY == pizzaCoords.y){
                 var tail = {
@@ -236,6 +263,7 @@ var drawModule = (function () {
                     y:snakeY
                 };
                 score++;
+                speedBoost();
                 createPizza();
                 
             }
@@ -255,7 +283,7 @@ var drawModule = (function () {
                 bodysnake(snake[i].x, snake[i].y);
             }
             
-            //Cette pizza m'intrigue...
+            // on s'occupe de créer la pizza à proprement parler, grâce à la position de celle ci (obtenue précédemment grâce à notre fonction random()) que l'on injecte dans le module de dessin de la pizza :D.
             pizza(pizzaCoords.x, pizzaCoords.y);
             
             // pas besoin d'expliquer ici...
@@ -273,13 +301,13 @@ var drawModule = (function () {
             drawSnake();
             
             // on y ajoute sa première nourriture.
-            createPizza()
+            createPizza();
             // et voila le retour tant attendu du setInterval !!!! Applaudissez le bien fort !!! 
             /*
                 Il s'agit de la fonction dont nous avons parlé précédemment et qui permet de créer la merveilleuse boucle de rafraichissement du jeu !
                 A noter que l'on peut régler le taux de rafraichissement (sait on jamais si on veut un jeu fonctionnant en x3 pour les dingos du pad ! XD).
             */
-            gameloop = setInterval(main, 1000/30);
+            gameloop = setInterval(main, gameSpeed);
         }
         
         // Etant donné qu'il s'agit d'un module, on se sert du return ici pour faire valoir la fonction init.
