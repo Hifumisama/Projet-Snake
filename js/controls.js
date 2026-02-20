@@ -6,8 +6,8 @@
 (function (document, drawModule) {
 
     // On relie le bouton du HTML au javacript par l'intermédiaire de cette fonction.
-    
-    var btn = document.getElementById('btn');
+
+    btn = document.getElementById('btn');
     btn.addEventListener("click", function () {
         drawModule.init();
     });

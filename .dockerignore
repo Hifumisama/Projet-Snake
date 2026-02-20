@@ -1,0 +1,7 @@
+# Fichiers à ignorer lors du build Docker
+.git
+.gitignore
+.gitattributes
+README.md
+Dockerfile
+.dockerignore

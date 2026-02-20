@@ -124,10 +124,10 @@ var drawModule = (function () {
                 /*
                     Pour chaque coordonnée testée concernant la position de chacun des blocs du serpent...
                 */
-                for(var i=0; i>snake.length; i++)
+                for(var i=0; i<snake.length; i++){
                     var snakeX = snake[i].x;
                     var snakeY = snake[i].y;
-            
+
                         /*
                             On teste SI la coordonnée X, OU la coordonnée Y OU les 2 coordonnées sont identiques. Et si c'est le cas on réaffecte un tirage de variable, que l'on espère plus chanceux :D,
                             SINON on se contente de garder les variables trouvées.
@@ -137,6 +137,7 @@ var drawModule = (function () {
                                 pizzaCoords.x = random();
                                 pizzaCoords.y = random();
                             }
+                }
         }
         
         /* 
@@ -154,8 +155,8 @@ var drawModule = (function () {
                 if(array[i].x === x && array[i].y === y){
                     return true;
                 }
-                return false;
             }
+            return false;
         }
         
         /*

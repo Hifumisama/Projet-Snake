@@ -21,3 +21,7 @@ var score = 0;
 var difficulty = 10;
 var snake;
 var pizza;
+var direction;
+var pizzaCoords;
+var gameloop;
+var btn;
